@@ -1,0 +1,45 @@
+{
+  "profiles": {
+    "termino -?": {
+      "commandName": "Project",
+      "commandLineArgs": "-?"
+    },
+    "termino set -?": {
+      "commandName": "Project",
+      "commandLineArgs": "set -?"
+    },
+    "termino set": {
+      "commandName": "Project",
+      "commandLineArgs": "set"
+    },
+    "termino set --garbage": {
+      "commandName": "Project",
+      "commandLineArgs": "set -?"
+    },
+    "termino set -f red": {
+      "commandName": "Project",
+      "commandLineArgs": "set -f red"
+    },
+    "termino set -tc red -f green -b blue": {
+      "commandName": "Project",
+      "commandLineArgs": "set -tc red -f green -b blue"
+    },
+    "termino set -f red -b green -b green": {
+      "commandName": "Project",
+      "commandLineArgs": "set -f red -b green -b green"
+    },
+    "termino undo -?": {
+      "commandName": "Project",
+      "commandLineArgs": "undo -?"
+    },
+    "termino undo": {
+      "commandName": "Project",
+      "commandLineArgs": "undo"
+    },
+    "termino undo 2": {
+      "commandName": "Project",
+      "commandLineArgs": "undo 2"
+    }
+
+  }
+}

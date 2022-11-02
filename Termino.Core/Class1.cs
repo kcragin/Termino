@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace Termino.Core
+﻿namespace Termino.Core
 {
     public interface IUndoStack
     {
@@ -49,28 +47,20 @@ namespace Termino.Core
         public DateTime Timestamp { get; }
     }
 
+    public interface IExecutable
+    {
+        void Execute();
+
+        void Unexecute();
+    }
+
+
+
     public abstract class Command
     {
-        protected Command(string name) 
-        {
-            Name = name;
-        }
+        public string Name { get; init; }
 
-        public string Name { get; protected set; }
-
-        public abstract string Description { get; }
-
-        public virtual bool Undoable { get; } = true;
-    }
-
-    public class UndoCommand : Command
-    {
-        public override bool Undoable => false;
-    }
-
-    public class SetTabColorCommand : Command
-    {
-        public override string Description => throw new NotImplementedException();
+        public string Description { get; init; }
     }
 
     public class SetForegroundCommand : Command

@@ -13,3 +13,8 @@ public record SetForegroundColorCommand(string Name, string Description, Color C
 public record SetBackgroundColorCommand(string Name, string Description, Color Color) : ICommand;
 
 public record UndoCommand(string Name, string Description, int NumberOfCommands) : ICommand;
+
+public class State
+{
+
+}

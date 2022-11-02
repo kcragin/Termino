@@ -1,45 +1,60 @@
 {
   "profiles": {
-    "termino -?": {
+    "-?": {
       "commandName": "Project",
       "commandLineArgs": "-?"
     },
-    "termino set -?": {
+    "set -?": {
       "commandName": "Project",
       "commandLineArgs": "set -?"
     },
-    "termino set": {
+    "set": {
       "commandName": "Project",
       "commandLineArgs": "set"
     },
-    "termino set --garbage": {
+    "set --garbage": {
       "commandName": "Project",
-      "commandLineArgs": "set -?"
+      "commandLineArgs": "set --garbage"
     },
-    "termino set -f red": {
+    "set -f red": {
       "commandName": "Project",
       "commandLineArgs": "set -f red"
     },
-    "termino set -tc red -f green -b blue": {
+    "set -tc #FF0000 -f green -b blue": {
       "commandName": "Project",
-      "commandLineArgs": "set -tc red -f green -b blue"
+      "commandLineArgs": "set -tc #FF0000 -f green -b blue"
     },
-    "termino set -f red -b green -b green": {
+    "set -tc #GG0000 -f #PPPPPP -b BBBBBB": {
+      "commandName": "Project",
+      "commandLineArgs": "set -tc #GG0000 -f #PPPPPP -b BBBBBB"
+    },
+    "set -f red -b green -b green": {
       "commandName": "Project",
       "commandLineArgs": "set -f red -b green -b green"
     },
-    "termino undo -?": {
+    "set --background notacolor": {
+      "commandName": "Project",
+      "commandLineArgs": "set --background notacolor"
+    },
+    "undo -?": {
       "commandName": "Project",
       "commandLineArgs": "undo -?"
     },
-    "termino undo": {
+    "undo": {
       "commandName": "Project",
       "commandLineArgs": "undo"
     },
-    "termino undo 2": {
+    "undo 2": {
       "commandName": "Project",
       "commandLineArgs": "undo 2"
+    },
+    "--mode InProc": {
+      "commandName": "Project",
+      "commandLineArgs": "--mode InProc -?"
+    },
+    "--sfl Stable -?": {
+      "commandName": "Project",
+      "commandLineArgs": "-sfl Stable -?"
     }
-
   }
 }

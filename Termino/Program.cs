@@ -8,7 +8,94 @@ using Termino;
 var colorsBinder = new ColorsBinder();
 var commandQueue = new BlockingCollection<ICliCommand>();
 
-#region Set Command
+#region Undo Command
+
+var undoArgument = new Argument<int>(
+    "N",
+    () => 1,
+    "The number of commands to undo");
+
+
+var undoCommand = new Command("undo", "Undoes the previous N commands. If N is not specified, only the most recent command is undone.")
+{
+    undoArgument,
+};
+
+undoCommand.SetHandler(
+    numberOfCommandsToUndo =>
+    {
+        commandQueue.Add(new CliUndoCommand(
+            undoArgument.Name,
+            undoArgument.Description ?? "",
+            Mode.InProc,
+            numberOfCommandsToUndo));
+    },
+    undoArgument);
+
+#endregion
+
+#region Get Command
+var getCommand = new Command("get", "Gets the content of the Windows Terminal settings file. The mode option is ignored.")
+{
+};
+
+getCommand.SetHandler(file =>
+{
+});
+
+#endregion
+
+#region Global Options
+
+var modeOption = new Option<Mode>(
+    new[] { "-m", "--mode" },
+    () => Mode.InProc,
+    "The mode in which commands will be executed against the profile. Can be one of InProc or OutOfProc");
+
+var settingsFileLocationOption = new Option<SettingsFileLocation>(
+    new[] { "-sfl", "--settingsfilelocation" },
+    () => SettingsFileLocation.Stable,
+    "The logical location of the settings file, which is based on the release of Windows Terminal that you have installed. Can be one of Stable, Preview, Unpackaged or Named");
+
+var globalOptions = new Option[] { modeOption, settingsFileLocationOption };
+
+#endregion
+
+#region Profile Related Options
+
+var profileNameOption = new Option<string>(
+    new[] { "-n", "--name" },
+    "References the first profile profile with the specified name");
+
+var profileGuidOption = new Option<string>(
+    new[] { "-g", "--guid" },
+    "References the profile identified by the specified guid");
+
+var profilePositionOption = new Option<int>(
+    new[] { "-p", "--position" },
+    "References the profile at the specified, zero-indexed position")
+{
+    ArgumentHelpName = "pos",
+};
+
+var profileRelatedOptions = globalOptions
+    .Concat(new Option[] { profileGuidOption, profileNameOption, profilePositionOption })
+    .ToArray();
+
+#endregion
+
+#region Profile Get Command
+
+var profileGetCommand = new Command("get", "Gets the content of the specified profile. The mode option is ignored.");
+profileRelatedOptions.ForEach(profileGetCommand.AddOption);
+
+profileGetCommand.SetHandler(file =>
+{
+});
+
+#endregion
+
+#region Profile Set Command
 
 var tabColorOption = new Option<string>("--tabColor", "Sets the tab color");
 tabColorOption.AddAlias("-tc");
@@ -25,20 +112,22 @@ foregroundOption.AddAlias("-f");
 foregroundOption.ArgumentHelpName = "color";
 foregroundOption.AddValidator(colorsBinder.ValidateColor);
 
-var setCommand = new Command("set", "Sets the specified Windows Terminal element to the specified value")
+var profileSetCommand = new Command("set", "Sets the specified Windows Terminal element to the specified value")
 {
     tabColorOption,
     backgroundOption,
-    foregroundOption,
+    foregroundOption
 };
 
-setCommand.AddValidator(cr =>
+profileRelatedOptions.ForEach(profileSetCommand.AddOption);
+
+profileSetCommand.AddValidator(cr =>
 {
     if (!cr.Children.Any())
         cr.ErrorMessage = "At least one option must be supplied";
 });
 
-setCommand.SetHandler(
+profileSetCommand.SetHandler(
     colors =>
     {
         if (colors.TabColor.HasValue)
@@ -64,83 +153,44 @@ setCommand.SetHandler(
 
 #endregion
 
-#region Undo Command
-
-var undoArgument = new Argument<int>(
-    "N",
-    () => 1,
-    "The number of commands to undo");
-
-var undoCommand = new Command("undo", "Undoes the previous N commands. If N is not specified, only the most recent command is undone.")
+var profileSubCommand = new Command("profile", "Gets information about a profile or changes settings related to a profile")
 {
-    undoArgument,
+    profileGetCommand,
+    profileSetCommand,
 };
-
-undoCommand.SetHandler(
-    numberOfCommandsToUndo =>
-    {
-        commandQueue.Add(new CliUndoCommand(
-            undoArgument.Name,
-            undoArgument.Description ?? "",
-            Mode.InProc,
-            numberOfCommandsToUndo));
-    },
-    undoArgument);
-
-#endregion
-
-#region Get Command
-var getCommand = new Command("get", "Gets the content of the Windows Terminal settings file. The mode is ignored; settings will be retrieved and displayed synchronously")
-{
-};
-
-getCommand.SetHandler(file =>
-{
-});
-
-#endregion
-
-#region Global Options
-
-var modeOption = new Option<Mode>(
-    new[] { "-m", "--mode" },
-    () => Mode.InProc,
-    "The mode in which commands will be executed against the profile. Can be one of InProc or OutOfProc");
-
-var settingsFileLocationOption = new Option<SettingsFileLocation>(
-    new[] { "-sfl", "--settingsfilelocation" },
-    () => SettingsFileLocation.Stable,
-    "The logical location of the settings file, which is based on the release of Windows Terminal that you have installed. Can be one of Stable, Preview, Unpackaged or Named");
-
-#endregion
 
 var rootCommand = new RootCommand("Termino - Control how your Windows Terminal appears and works via the command line")
 {
-    getCommand,
-    setCommand,
-    undoCommand,
     modeOption,
-    settingsFileLocationOption
+    settingsFileLocationOption,
+    getCommand,
+    undoCommand,
+    profileSubCommand,
 };
 
-var parser = new CommandLineBuilder(rootCommand)
+var parseResult = new CommandLineBuilder(rootCommand)
     .UseHelp(context =>
     {
         // add a general section about colors for commands that require a color argument
-        if (context.Command == setCommand)
-            context.HelpBuilder.CustomizeLayout(
-                _ => HelpBuilder.Default
-                    .GetLayout()
-                    .Append(hc =>
-                    {
-                        Console.WriteLine("Colors:");
-                        var colorParams = new[] { new TwoColumnHelpRow("<color>", "Should be a named color (see https://www.w3schools.com/colors/colors_names.asp) or have the hexadecimal format, #RRGGBB (see https://www.w3schools.com/colors/colors_hexadecimal.asp)")};
-                        hc.HelpBuilder.WriteColumns(colorParams, hc);
-                    }));
-    })
-    .Build();
 
-var parseResult = parser.Parse(args);
+        switch (context.Command)
+        {
+            case var x when x == profileSetCommand:
+                context.HelpBuilder.CustomizeLayout(
+                    _ => HelpBuilder.Default
+                        .GetLayout()
+                        .Append(hc =>
+                        {
+                            Console.WriteLine("Colors:");
+                            var colorParams = new[] { new TwoColumnHelpRow("<color>", "Should be a named color (see https://www.w3schools.com/colors/colors_names.asp) or have the hexadecimal format, #RRGGBB (see https://www.w3schools.com/colors/colors_hexadecimal.asp)") };
+                            hc.HelpBuilder.WriteColumns(colorParams, hc);
+                        }));
+                break;
+        }
+    })
+    .Build()
+    .Parse(args);
+
 if (parseResult.Errors.Any())
 {
     foreach (var e in parseResult.Errors)

@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Termino.Api\Termino.Api.csproj" />
+    <ProjectReference Include="..\Termino.Core\Termino.Core.csproj" />
   </ItemGroup>
 
 </Project>

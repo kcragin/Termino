@@ -4,37 +4,48 @@
       "commandName": "Project",
       "commandLineArgs": "-?"
     },
-    "set -?": {
+
+    "profile -?": {
       "commandName": "Project",
-      "commandLineArgs": "set -?"
+      "commandLineArgs": "profile -?"
     },
-    "set": {
+
+    "profile get -?": {
       "commandName": "Project",
-      "commandLineArgs": "set"
+      "commandLineArgs": "profile get -?"
     },
-    "set --garbage": {
+
+    "profile set -?": {
       "commandName": "Project",
-      "commandLineArgs": "set --garbage"
+      "commandLineArgs": "profile set -?"
     },
-    "set -f red": {
+    "profile set": {
       "commandName": "Project",
-      "commandLineArgs": "set -f red"
+      "commandLineArgs": "profile set"
     },
-    "set -tc #FF0000 -f green -b blue": {
+    "profile set --garbage": {
       "commandName": "Project",
-      "commandLineArgs": "set -tc #FF0000 -f green -b blue"
+      "commandLineArgs": "profile set --garbage"
     },
-    "set -tc #GG0000 -f #PPPPPP -b BBBBBB": {
+    "profile set -f red": {
       "commandName": "Project",
-      "commandLineArgs": "set -tc #GG0000 -f #PPPPPP -b BBBBBB"
+      "commandLineArgs": "profile set -f red"
     },
-    "set -f red -b green -b green": {
+    "profile set -tc #FF0000 -f green -b blue": {
       "commandName": "Project",
-      "commandLineArgs": "set -f red -b green -b green"
+      "commandLineArgs": "profile set -tc #FF0000 -f green -b blue"
     },
-    "set --background notacolor": {
+    "profile set -tc #GG0000 -f #PPPPPP -b BBBBBB": {
       "commandName": "Project",
-      "commandLineArgs": "set --background notacolor"
+      "commandLineArgs": "profile set -tc #GG0000 -f #PPPPPP -b BBBBBB"
+    },
+    "profile set -f red -b green -b green": {
+      "commandName": "Project",
+      "commandLineArgs": "profile set -f red -b green -b green"
+    },
+    "profile set --background notacolor": {
+      "commandName": "Project",
+      "commandLineArgs": "profile set --background notacolor"
     },
     "undo -?": {
       "commandName": "Project",

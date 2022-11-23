@@ -3,7 +3,9 @@ using System.CommandLine;
 using System.CommandLine.Builder;
 using System.CommandLine.Help;
 using System.CommandLine.Parsing;
+using System.Diagnostics;
 using Termino;
+using Termino.Api;
 
 var colorsBinder = new ColorsBinder();
 var commandQueue = new BlockingCollection<ICliCommand>();
@@ -52,10 +54,10 @@ var modeOption = new Option<Mode>(
     () => Mode.InProc,
     "The mode in which commands will be executed against the profile. Can be one of InProc or OutOfProc");
 
-var settingsFileLocationOption = new Option<SettingsFileLocation>(
+var settingsFileLocationOption = new Option<WindowsTerminalInstallType>(
     new[] { "-sfl", "--settingsfilelocation" },
-    () => SettingsFileLocation.Stable,
-    "The logical location of the settings file, which is based on the release of Windows Terminal that you have installed. Can be one of Stable, Preview, Unpackaged or Named");
+    () => WindowsTerminalInstallType.Stable,
+    "The logical location of the settings file, which is based on the release of Windows Terminal that you have installed. Can be one of Stable, Preview, Unpackaged or Unspecified");
 
 var globalOptions = new Option[] { modeOption, settingsFileLocationOption };
 
@@ -202,19 +204,20 @@ if (parseResult.Errors.Any())
     Environment.Exit(1);
 }
 
-var x = await parseResult.InvokeAsync();
+var exitCode = await parseResult.InvokeAsync();
 
-// after parsing, we want to run a background task that dequeues the
-// commands sent from the handlers assigned to the parsed commands/options/arguments.
-// this task will then play these commands directly against the settings file or
-// push them to a daemon for playing out-of-process from the CLI
-await Task.Run(() =>
-{
-    foreach (var command in commandQueue.GetConsumingEnumerable())
+if (exitCode == 0)
+    // after parsing, we want to run a background task that dequeues the
+    // commands sent from the handlers assigned to the parsed commands/options/arguments.
+    // this task will then play these commands directly against the settings file or
+    // push them to a daemon for playing out-of-process from the CLI
+    await Task.Run(() =>
     {
-        // if outproc requeue
-        // if inproc exec
-    }
-});
+        foreach (var command in commandQueue.GetConsumingEnumerable())
+        {
+            // if outofproc requeue
+            // if inproc exec
+        }
+    });
 
-return x;
+return exitCode;

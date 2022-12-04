@@ -1,4 +1,6 @@
-﻿namespace Termino.Api;
+﻿using static Termino.Api.WindowsTerminalInstallType;
+
+namespace Termino.Api;
 
 /// <summary>
 /// Provides the location of a settings file.
@@ -11,7 +13,7 @@ public class SettingsFileLocator
     public static readonly SettingsFileLocator Instance = new();
 
     /// <summary>
-    /// Gets the logical locations of the settings file based on https://learn.microsoft.com/en-us/windows/terminal/install.
+    /// Gets the logical location of the settings file based on https://learn.microsoft.com/en-us/windows/terminal/install.
     /// </summary>
     /// <remarks>
     /// The returned value is the location of the settings file without any environment variables or special path segments expanded.
@@ -24,17 +26,38 @@ public class SettingsFileLocator
     {
         return installationType switch
         {
-            WindowsTerminalInstallType.Stable => @"%LOCALAPPDATA%\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json",
-            WindowsTerminalInstallType.Preview => @"%LOCALAPPDATA%\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json",
-            WindowsTerminalInstallType.Unpackaged => @"%LOCALAPPDATA%\Microsoft\Windows Terminal\settings.json",
-            WindowsTerminalInstallType.Unspecified => hintPath ?? throw new ArgumentException("The hint path must be specified for an unspecified installation type", nameof(hintPath)),
+            Stable => @"%LOCALAPPDATA%\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json",
+            Preview => @"%LOCALAPPDATA%\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json",
+            Unpackaged => @"%LOCALAPPDATA%\Microsoft\Windows Terminal\settings.json",
+            Unspecified => hintPath ?? throw new ArgumentException("The hint path must be specified for an unspecified installation type", nameof(hintPath)),
+            WindowsTerminalInstallType.Probe => Probe(),
             _ => throw new ArgumentOutOfRangeException(nameof(installationType), "The installation type specified is out of range of the valid installation types")
         };
+
+        string Probe()
+        {
+            var path = GetSettingsFileLogicalPath(Stable);
+            if (File.Exists(path)) return path;
+            path = GetSettingsFileLogicalPath(Preview);
+            if (File.Exists(path)) return path;
+            path = GetSettingsFileLogicalPath(Unpackaged);
+            if (File.Exists(path)) return path;
+            path = GetSettingsFileLogicalPath(Unspecified, hintPath);
+            if (File.Exists(path)) return path;
+            throw new FileNotFoundException("Cannot find the location of the settings file");
+        }
     }
 
+    /// <summary>
+    /// Gets the actual file information about the settings file with all environment variables and special path segments expanded.
+    /// </summary>
+    /// <param name="installationType"></param>
+    /// <param name="hintPath"></param>
+    /// <returns></returns>
     public FileInfo GetSettingsFilePath(WindowsTerminalInstallType installationType, string? hintPath = null)
     {
-        var x = Environment.ExpandEnvironmentVariables(GetSettingsFileLogicalPath(installationType, hintPath));
-        return new FileInfo(x);
+        var path = Environment.ExpandEnvironmentVariables(GetSettingsFileLogicalPath(installationType, hintPath));
+        var fi =  new FileInfo(path);
+        return fi.Exists ? fi : throw new FileNotFoundException("The settings file does not exist", path);
     }
 }
